@@ -94,6 +94,7 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
+**/main.db
 
 # Flask stuff:
 instance/
@@ -193,12 +194,12 @@ out/
 **/visualisations
 **/results
 **/trained_models
+!projects/placenta/trained_models/graph_converted_state_dict.pth
 **/plots
 **/graph_splits
 **/datasets
 **/slides
 !happy/data/datasets
-!projects/placenta/plots
 *.pth
 *.pt
 *.csv
