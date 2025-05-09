@@ -2,7 +2,7 @@
 
 ## Fork
 
-a fork for packaging and easy inference usage.
+a fork for packaging and easy inference usage (on torch 2.6.0+cu12).
 
 This fork won't touch any training pipeline.
 
@@ -60,5 +60,5 @@ will work
 ## Fork To do
 
 - [x] chunck all sql insert command to get around too many records issue (too many nuclei or cell prediction to be saved, especially)
-- [ ] convert the graph_model.pt to be state_dict only. for the loading using newer versions of torch. (I am on torch 2.6.1, cuda 12.8)
+- [ ] convert the graph_model.pt to be state_dict only. for the loading using newer versions of torch. (I am on torch 2.6.0+cu124)
 - [ ] otherwise, re-trian the graph model using torch 2.6.1, cuda 12.8
