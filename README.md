@@ -6,7 +6,7 @@ a fork for packaging and easy inference usage (on torch 2.6.0+cu12).
 
 This fork won't touch any training pipeline.
 
-## Installation
+### Installation
 
 Our codebase is writen in python=3.10 and has been tested on Ubuntu 20.04.2 (WSL2), 
 MacOS 11.1, and CentOS 7.9.2009 using both an NVIDIA A100 GPU and a CPU
@@ -31,7 +31,19 @@ Recommend using uv to install.
 uv pip install git+https://github.com/brainfo/happy.git
 ```
 
-### On the original version
+### Inferences
+
+1. cell inference
+```bash
+python $happy_prefix/cell_inference.py --project-name placenta --organ-name placenta --nuc-model-id 1 --cell-model-id 2 --slide-id 1 --cell-batch-size 800 --nuc-batch-size 16 > cell_inference.stdout 2>&1
+```
+
+2. Use the converted state dict model for graph inference, for the run id correctly with cell predictions saved in the database
+```bash
+python $happy_prefix/graph_inference.py --project-name placenta --organ-name placenta --pre-trained-path $happy_prefix/projects/placenta/trained_models/graph_converted_state_dict.pth --run-id 3 > graph_inference.stdout 2>&1
+```
+
+## On the original version
 
 With this env:
 ```bash
