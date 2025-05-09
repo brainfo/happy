@@ -52,7 +52,7 @@ class PredictionSaver:
                     and (centroid_y + cell_tile_size) < self.file.max_slide_height
                 ):
                     coords.append((centroid_x, centroid_y))
-
+            print(f"saving {len(coords)} nuclei predictions for tile {tile_index}")
             db.save_pred_workings(self.id, coords)
             db.mark_finished_tiles(self.id, [tile_index])
 
@@ -60,6 +60,8 @@ class PredictionSaver:
     # same nuc, this removes them.
     def cluster_multi_detections(self, nuclei_preds, dist_threshold=4):
         print("finding duplicate nuclei clusters to cluster into one")
+        if len(nuclei_preds) == 0:
+            raise ValueError(f"No nuclei predictions found for run {self.id}")
         tree = sk.KDTree(nuclei_preds, metric="euclidean")
 
         # each element contains index of point and index of neighbours within radius
@@ -67,7 +69,6 @@ class PredictionSaver:
 
         # find all inds with at least one neighbour within radius and fewer than 5
         dup_det_inds = [x for x in all_nn_indices if 1 < len(x) < 5]
-
         # remove some identical entries
         # (i.e. if there are two neighbours there will be 2 entries)
         unique_dup_det_inds = np.unique(
@@ -122,7 +123,12 @@ class PredictionSaver:
 
     def apply_nuclei_post_processing(self, cluster=True, remove_edges=True):
         nuclei_preds = db.get_all_unvalidated_nuclei_preds(self.id)
-        nuclei_preds = np.array(list(zip(nuclei_preds["x"], nuclei_preds["y"])))
+        # Convert to numpy array and ensure it's 2D
+        nuclei_preds = np.array([(x, y) for x, y in zip(nuclei_preds["x"], nuclei_preds["y"])])
+        # Ensure nuclei_preds is 2D even when empty
+        if len(nuclei_preds) == 0:
+            ## raise error
+            raise ValueError(f"No nuclei predictions found for run {self.id}")
         if cluster:
             nuclei_preds = self.cluster_multi_detections(nuclei_preds)
         if remove_edges:

@@ -117,7 +117,6 @@ def run_nuclei_eval(
                 else:
                     early_break = True
                     break
-
     if not early_break and not pred_saver.file.nucs_done:
         pred_saver.apply_nuclei_post_processing(cluster=True, remove_edges=True)
         pred_saver.commit_valid_nuclei_predictions()

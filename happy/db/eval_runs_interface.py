@@ -8,6 +8,9 @@ from happy.db.eval_runs import EvalRun, Prediction, TileState, UnvalidatedPredic
 from happy.db.models_training import Model
 from happy.db.base import database, init_db
 
+from playhouse.shortcuts import chunked
+from peewee import fn
+
 
 def init():
     db_name = "main.db"
@@ -65,7 +68,7 @@ def save_new_tile_state(run_id, tile_xy_list):
     data = [(run_id, i, xs[i], ys[i]) for i in range(len(tile_xy_list))]
 
     with database.atomic():
-        for batch in chunked(data, 8000):
+        for batch in chunked(data, 1000):
             TileState.insert_many(batch, fields=fields).execute()
 
 
@@ -126,23 +129,31 @@ def mark_cells_as_done(run_id):
 
 
 def save_pred_workings(run_id, coords):
+    print(f"saving {len(coords)} predictions for run {run_id}")
     data = [{"run": run_id, "x": coord[0], "y": coord[1]} for coord in coords]
     UnvalidatedPrediction.insert_many(data).on_conflict_ignore().execute()
+    count = UnvalidatedPrediction.select().count()
+    assert count > 0, "no data in UnvalidatedPrediction table"
+    print(f"number of rows in UnvalidatedPrediction table for run {run_id} is {count}")
 
 
 def get_all_unvalidated_nuclei_preds(run_id):
+
     preds = (
         UnvalidatedPrediction.select(UnvalidatedPrediction.x, UnvalidatedPrediction.y)
         .where(UnvalidatedPrediction.run == run_id)
         .dicts()
     )
-    # turns list of dicts into a dict of lists
+
+    if not preds:
+        raise ValueError(f"No unvalidated predictions found for run {run_id}")
+
     return {k: [dic[k] for dic in preds] for k in preds[0]}
 
 
 def validate_pred_workings(run_id, valid_coords):
     print(f"marking {len(valid_coords)} nuclei as valid ")
-    batch = 100000
+    batch = 5000
     with database.atomic():
         for i in range(0, len(valid_coords), batch):
             coords_vl = ValuesList(valid_coords[i : i + batch], columns=("x", "y"))
@@ -166,11 +177,19 @@ def commit_pred_workings(run_id):
         .order_by(UnvalidatedPrediction.x, UnvalidatedPrediction.y.asc())
     )
 
-    rows = Prediction.insert_from(
-        source, fields=[Prediction.run, Prediction.x, Prediction.y]
-    ).execute()
-    print(f"added {rows} nuclei predictions to Predictions table for eval run {run_id}")
-
+    rows_copied = 0
+    with database.atomic():
+        for batch in chunked(source.dicts(), 5000):
+            # batch is a list of dicts: [{'run': …, 'x': …, 'y': …}, …]
+            if not batch:
+                continue
+            rows_copied += (
+                Prediction
+                .insert_many(batch)
+                .on_conflict_ignore()
+                .execute()
+            )
+    print(f"added {rows_copied} nuclei predictions to Predictions table for eval run {run_id}")
 
 def save_cells(run_id, coords, predictions):
     # split the coordinates by class prediction

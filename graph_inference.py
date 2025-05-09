@@ -10,6 +10,7 @@ import pandas as pd
 
 from happy.utils.utils import get_device, get_project_dir
 from happy.organs import get_organ
+# from happy.models.clustergcn import ClusterGCN
 from happy.utils.utils import set_seed
 from happy.graph.graph_supervised import inference, MethodArg
 from happy.graph.visualise import visualize_points
@@ -86,8 +87,9 @@ def main(
 
     # Setup trained model
     pretrained_path = project_dir / pre_trained_path
-    model = torch.load(pretrained_path, map_location=device)
-    model_name = pretrained_path.parts[-1]
+    # torch.serialization.add_safe_globals([ClusterGCN])
+    model = torch.load(pre_trained_path, map_location=device)
+    model_name = pre_trained_path.parts[-1]
     model_epochs = (
         "model_final"
         if model_name == "graph_model.pt"
