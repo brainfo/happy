@@ -31,23 +31,30 @@ Recommend using uv to install.
 uv pip install git+https://github.com/brainfo/happy.git
 ```
 
-### Troubleshooting
+### On the original version
 
-Installing javabridge can sometimes be a little tricky on MacOS. If you get a 
-'jvm not found' or 'jni.h not found' style error then you need to locate your 
-java installation and export it. For example, if you installed java with homebrew you 
-can:
-
+With this env:
 ```bash
-export JAVA_HOME=/usr/local/opt/openjdk
+requires-python = "==3.10.16"
+dependencies = [
+    "torch==2.0.1",
+    "torch-geometric==2.3.1",
+    "torch-scatter",
+    "torch-sparse",
+    "torch-cluster",
+    "torch-spline-conv"
+]
+[tool.uv]
+package = false
 ```
 
-If you then get a error with 'module = PyImport_ImportModuleLevelObject' you can 
-install this fork of javabridge which fixes it:
-
 ```bash
-pip install git+https://github.com/LeeKamentsky/python-javabridge.git#egg=javabridge
+git clone https://github.com/Nellaker-group/happy.git
+cd happy
+uv pip install -e .
 ```
+
+will work
 
 
 ## Fork To do
