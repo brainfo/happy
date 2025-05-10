@@ -6,20 +6,14 @@ a fork for packaging and easy inference usage (on torch 2.6.0+cu12).
 
 This fork won't touch any training pipeline.
 
+
+### Fork To do
+
+- [x] chunck all sql insert command to get around too many records issue (too many nuclei or cell prediction to be saved, especially)
+- [x] convert the graph_model.pt to be state_dict only. for the loading using newer versions of torch. (I am on torch 2.6.0+cu124)
+    - [x] the conversion was done with cpu only torch 2.0.1 and with (only) the happy.models.clustergcn. see https://github.com/brainfo/full2weights
+
 ### Installation
-
-Our codebase is writen in python=3.10 and has been tested on Ubuntu 20.04.2 (WSL2), 
-MacOS 11.1, and CentOS 7.9.2009 using both an NVIDIA A100 GPU and a CPU
-
-You will first need to install the vips C binaries. The libvips documentation lists
-installation instructions [here](https://github.com/libvips/libvips/wiki) for different 
-OSs. If you are using MacOS you may brew install with:
-
-```bash
-brew install vips --with-cfitsio --with-imagemagick --with-openexr --with-openslide --with-webp
-```
-
-If you are on Ubuntu you may apt get:
 
 ```bash
 sudo apt install libvips
@@ -67,9 +61,3 @@ uv pip install -e .
 ```
 
 will work
-
-
-## Fork To do
-
-- [x] chunck all sql insert command to get around too many records issue (too many nuclei or cell prediction to be saved, especially)
-- [x] convert the graph_model.pt to be state_dict only. for the loading using newer versions of torch. (I am on torch 2.6.0+cu124)
