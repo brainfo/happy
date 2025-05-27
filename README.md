@@ -6,20 +6,14 @@ a fork for packaging and easy inference usage (on torch 2.6.0+cu12).
 
 This fork won't touch any training pipeline.
 
-## Installation
 
-Our codebase is writen in python=3.10 and has been tested on Ubuntu 20.04.2 (WSL2), 
-MacOS 11.1, and CentOS 7.9.2009 using both an NVIDIA A100 GPU and a CPU
+### Fork To do
 
-You will first need to install the vips C binaries. The libvips documentation lists
-installation instructions [here](https://github.com/libvips/libvips/wiki) for different 
-OSs. If you are using MacOS you may brew install with:
+- [x] chunck all sql insert command to get around too many records issue (too many nuclei or cell prediction to be saved, especially)
+- [x] convert the graph_model.pt to be state_dict only. for the loading using newer versions of torch. (I am on torch 2.6.0+cu124)
+    - [x] the conversion was done with cpu only torch 2.0.1 and with (only) the happy.models.clustergcn. see https://github.com/brainfo/full2weights
 
-```bash
-brew install vips --with-cfitsio --with-imagemagick --with-openexr --with-openslide --with-webp
-```
-
-If you are on Ubuntu you may apt get:
+### Installation
 
 ```bash
 sudo apt install libvips
@@ -31,7 +25,19 @@ Recommend using uv to install.
 uv pip install git+https://github.com/brainfo/happy.git
 ```
 
-### On the original version
+### Inferences
+
+1. cell inference
+```bash
+python $happy_prefix/cell_inference.py --project-name placenta --organ-name placenta --nuc-model-id 1 --cell-model-id 2 --slide-id 1 --cell-batch-size 800 --nuc-batch-size 16 > cell_inference.stdout 2>&1
+```
+
+2. Use the converted state dict model for graph inference, for the run id correctly with cell predictions saved in the database
+```bash
+python $happy_prefix/graph_inference.py --project-name placenta --organ-name placenta --pre-trained-path $happy_prefix/projects/placenta/trained_models/graph_converted_state_dict.pth --run-id 3 > graph_inference.stdout 2>&1
+```
+
+## On the original version
 
 With this env:
 ```bash
@@ -55,9 +61,3 @@ uv pip install -e .
 ```
 
 will work
-
-
-## Fork To do
-
-- [x] chunck all sql insert command to get around too many records issue (too many nuclei or cell prediction to be saved, especially)
-- [x] convert the graph_model.pt to be state_dict only. for the loading using newer versions of torch. (I am on torch 2.6.0+cu124)
