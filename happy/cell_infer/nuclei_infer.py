@@ -73,8 +73,12 @@ def run_nuclei_eval(
                     # find the indices in the batch which are and aren't empty tiles
                     empty_mask = np.array(batch["empty_tile"])
                     tile_indexes = np.array(batch["tile_index"])
+                    print(f"DEBUG: empty_mask: {empty_mask}")
+                    print(f"DEBUG: tile_indexes: {tile_indexes}")
                     empty_inds = tile_indexes[empty_mask]
                     non_empty_inds = tile_indexes[~empty_mask]
+                    print(f"DEBUG: empty_inds: {empty_inds}")
+                    print(f"DEBUG: non_empty_inds: {non_empty_inds}")
 
                     # if there are empty tiles in the batch, save them as empty
                     if empty_inds.size > 0:
@@ -91,6 +95,7 @@ def run_nuclei_eval(
                         )
                         # Get scale factor
                         scale = np.array(batch["scale"])[~empty_mask][0]
+                        print(f"DEBUG: scale: {scale}")
 
                         # Network can't be fed batches of images
                         # as it returns predictions in one array
@@ -103,6 +108,7 @@ def run_nuclei_eval(
                             scores, labels, boxes = model(model_input, device)
                             scores = scores.cpu().numpy()
                             boxes = boxes.cpu().numpy()
+                            print(f"DEBUG: scores shape: {scores.shape}, boxes shape: {boxes.shape}")
 
                             # Correct predictions from resizing of img.
                             boxes /= scale
@@ -111,6 +117,7 @@ def run_nuclei_eval(
                             image_boxes = pred_saver.filter_by_score(
                                 max_detections, score_threshold, scores, boxes
                             )
+                            print(f"DEBUG: filtered boxes shape: {image_boxes.shape}")
 
                             pred_saver.save_nuclei(non_empty_ind, image_boxes)
                             pbar.update()

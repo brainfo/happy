@@ -102,9 +102,12 @@ class MicroscopeFile:
 
     # Returns rescaled image at (x,y) coords with specified width and height
     def get_tile_by_coords(self, x, y, w, h):
-        return self._get_rescaled_img(
+        print(f"DEBUG: Getting tile at coords ({x}, {y}) with size {w}x{h}")
+        img = self._get_rescaled_img(
             x, y, w * self.rescale_ratio, h * self.rescale_ratio, w, h
         )
+        print(f"DEBUG: Loaded image shape: {img.shape}, dtype: {img.dtype}, min: {img.min()}, max: {img.max()}")
+        return img
 
     # Returns rescaled image with cell (x,y) centre coords with specified width and height
     def get_cell_tile_by_cell_coords(self, cell_x, cell_y, target_w, target_h):
@@ -131,11 +134,15 @@ class MicroscopeFile:
 
     # returns img after being correctly scaled back to original target dimensions
     def _get_rescaled_img(self, x, y, w, h, target_w, target_h):
+        print(f"DEBUG: Getting original image at ({x}, {y}) with size {w}x{h}")
         orig_img = self.reader.get_img(x, y, int(w), int(h))
+        print(f"DEBUG: Original image shape: {orig_img.shape}, dtype: {orig_img.dtype}, min: {orig_img.min()}, max: {orig_img.max()}")
 
         pil_orig_image = Image.fromarray(orig_img.astype("uint8"))
         rescaled = pil_orig_image.resize([target_w, target_h])
-        return np.asarray(rescaled)
+        rescaled_img = np.asarray(rescaled)
+        print(f"DEBUG: Rescaled image shape: {rescaled_img.shape}, dtype: {rescaled_img.dtype}, min: {rescaled_img.min()}, max: {rescaled_img.max()}")
+        return rescaled_img
 
     # Gets all (x,y) top left coords for all tiles in WSI with dimensions and overlap
     def _get_tile_xys(self, w, h, overlap):
@@ -184,17 +191,30 @@ class MicroscopeFile:
     # Rough threshold for empty sets of pixels. Either all white, all black, or grey.
     def _img_is_empty(self, img):
         avg_rgb = np.mean(img, axis=(0, 1))
+        print(f"DEBUG: Average RGB values: {avg_rgb}")
+        print(f"DEBUG: Image shape: {img.shape}, dtype: {img.dtype}")
+        print(f"DEBUG: Image min/max values: {img.min()}/{img.max()}")
+        print(f"DEBUG: Image unique values: {np.unique(img)}")
+        
         # img is white
         if np.all(avg_rgb > 245):
+            print("DEBUG: Image marked as empty - too white")
             return True
         # img is black
         if np.all(avg_rgb < 10):
+            print("DEBUG: Image marked as empty - too black")
             return True
         # check if img is grey
         sorted_flat_img = np.sort(img, axis=None)
         portion_of_size = int(sorted_flat_img.size / 10)
-        ratio_darkest_brightest = np.mean(sorted_flat_img[:portion_of_size]) / np.mean(
-            sorted_flat_img[-portion_of_size:]
-        )
+        darkest_mean = np.mean(sorted_flat_img[:portion_of_size])
+        brightest_mean = np.mean(sorted_flat_img[-portion_of_size:])
+        ratio_darkest_brightest = darkest_mean / brightest_mean
+        print(f"DEBUG: Darkest mean: {darkest_mean}, Brightest mean: {brightest_mean}")
+        print(f"DEBUG: Darkest/brightest ratio: {ratio_darkest_brightest}")
         # img is grey
-        return True if ratio_darkest_brightest > 0.95 else False
+        if ratio_darkest_brightest > 0.95:
+            print("DEBUG: Image marked as empty - too grey")
+            return True
+        print("DEBUG: Image marked as non-empty")
+        return False

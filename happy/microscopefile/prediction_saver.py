@@ -26,15 +26,20 @@ class PredictionSaver:
 
     # Saves center location of box predictions in terms of whole slide coordinates
     def save_nuclei(self, tile_index, boxes):
+        print(f"DEBUG: save_nuclei called with tile_index {tile_index}, boxes shape: {boxes.shape}")
         tile_x = str(self.file.tile_xy_list[tile_index][0])
         tile_y = str(self.file.tile_xy_list[tile_index][1])
+        print(f"DEBUG: tile coordinates: x={tile_x}, y={tile_y}")
 
         cell_tile_size = 200 * self.file.rescale_ratio
+        print(f"DEBUG: cell_tile_size: {cell_tile_size}")
 
         coords = []
         if boxes.size == 0:
+            print("DEBUG: boxes is empty, marking tile as finished")
             db.mark_finished_tiles(self.id, [tile_index])
         else:
+            print(f"DEBUG: processing {len(boxes)} boxes")
             for i, (x1, y1, x2, y2) in enumerate(boxes):
                 centroid_x = int(x1 + x2) / 2
                 centroid_y = int(y1 + y2) / 2
@@ -52,8 +57,11 @@ class PredictionSaver:
                     and (centroid_y + cell_tile_size) < self.file.max_slide_height
                 ):
                     coords.append((centroid_x, centroid_y))
-            print(f"saving {len(coords)} nuclei predictions for tile {tile_index}")
-            db.save_pred_workings(self.id, coords)
+                else:
+                    print(f"DEBUG: box {i} filtered out - centroid: ({centroid_x}, {centroid_y})")
+            print(f"DEBUG: saving {len(coords)} nuclei predictions for tile {tile_index}")
+            if len(coords) > 0:
+                db.save_pred_workings(self.id, coords)
             db.mark_finished_tiles(self.id, [tile_index])
 
     # Cluster overlapped tiles. Overlap value results in multiple predictions for
@@ -125,7 +133,7 @@ class PredictionSaver:
         nuclei_preds = db.get_all_unvalidated_nuclei_preds(self.id)
         # Convert to numpy array and ensure it's 2D
         nuclei_preds = np.array([(x, y) for x, y in zip(nuclei_preds["x"], nuclei_preds["y"])])
-        # Ensure nuclei_preds is 2D even when empty
+        
         if len(nuclei_preds) == 0:
             ## raise error
             raise ValueError(f"No nuclei predictions found for run {self.id}")
