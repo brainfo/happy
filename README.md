@@ -59,5 +59,3 @@ git clone https://github.com/Nellaker-group/happy.git
 cd happy
 uv pip install -e .
 ```
-
-will work
