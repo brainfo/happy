@@ -16,7 +16,7 @@ This fork won't touch any training pipeline.
 ### Installation
 
 ```bash
-sudo apt install libvips
+sudo apt install libvips-dev libopenslide-dev default-jdk
 ```
 
 Recommend using uv to install.

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.18.0", "torch==2.6.0"]
+requires = ["hatchling>=1.18.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -53,3 +53,13 @@ cell_train = "cell_train:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["happy"] 
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+torchvision = { index = "pytorch" }
+torchaudio = { index = "pytorch" }
