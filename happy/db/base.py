@@ -25,7 +25,7 @@ def init_db(db_name):
         db_name,
         pragmas={
             "foreign_keys": 1,
-            "journal_mode": "wal",
+            "journal_mode": "delete",
             "cache_size": 10000,
             "synchronous": 1,
         },

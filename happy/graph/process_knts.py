@@ -124,7 +124,7 @@ def _cluster_knts_into_point(
         inds_to_remove.extend(list(ind[1:]))
     # remove duplicates inds
     inds_to_remove = np.array(inds_to_remove)
-    unique_inds_to_remove = np.unique(inds_to_remove)
+    unique_inds_to_remove = np.unique(inds_to_remove).astype(int)
 
     # remove clustered
     predictions = np.delete(predictions, unique_inds_to_remove, axis=0)

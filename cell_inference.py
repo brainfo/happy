@@ -8,6 +8,7 @@ from happy.utils.utils import get_device, get_project_dir
 from happy.cell_infer import nuclei_infer, cell_infer
 import happy.db.eval_runs_interface as db
 
+import sys, os
 
 def main(
     project_name: str = typer.Option(...),
@@ -24,6 +25,7 @@ def main(
     cell_batch_size: int = 800,
     run_nuclei_pipeline: bool = True,
     run_cell_pipeline: bool = True,
+    save_debug_tiles: Optional[str] = None,
 ):
     """Runs inference over a WSI for nuclei detection, cell classification, or both.
 
@@ -50,6 +52,7 @@ def main(
         cell_batch_size: batch size for cell inference
         run_nuclei_pipeline: True if you want to perform nuclei detection
         run_cell_pipeline: True if you want to perform cell classification
+        save_debug_tiles: Path to directory to save debug tiles for inspection (e.g. "/tmp/debug_tiles")
     """
     device = get_device()
     project_dir = get_project_dir(project_name)
@@ -71,6 +74,7 @@ def main(
             score_threshold,
             max_detections,
             device,
+            save_debug_tiles,
         )
         end = time.time()
         print(f"Nuclei evaluation time: {(end - start):.3f}")
@@ -102,6 +106,7 @@ def nuclei_eval_pipeline(
     score_threshold,
     max_detections,
     device,
+    save_debug_tiles=None,
 ):
     # Load model weights and push to device
     model = nuclei_infer.setup_model(project_dir, model_id, device)
@@ -111,7 +116,8 @@ def nuclei_eval_pipeline(
     )
     # Predict nuclei
     nuclei_infer.run_nuclei_eval(
-        dataloader, model, pred_saver, device, score_threshold, max_detections
+        dataloader, model, pred_saver, device, score_threshold, max_detections,
+        save_debug_tiles=save_debug_tiles,
     )
     nuclei_infer.clean_up(pred_saver)
     return pred_saver.id

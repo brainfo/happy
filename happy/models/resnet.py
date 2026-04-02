@@ -12,7 +12,7 @@ def build_resnet(out_features=5, depth=50):
         first_out = 384
         second_out = 192
     elif depth == 50:
-        model = models.resnet50(pretrained=True)
+        model = models.resnet50(pretrained=False)
         in_features = 2048
         first_out = 768
         second_out = 384

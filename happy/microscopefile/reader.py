@@ -38,7 +38,7 @@ class Reader(ABC):
             return OpenSlideFile(slide_path, file_type, lvl_x)
         elif file_type in __BIOFORMATS__:
             print("Bioformat format")
-            javabridge.start_vm(class_path=bioformats.JARS)
+            javabridge.start_vm(class_path=javabridge.JARS + bioformats.JARS)
             return BioFormatsFile(slide_path, file_type, lvl_x)
         else:
             raise Exception(
@@ -51,10 +51,13 @@ class BioFormatsFile(Reader):
     def __init__(self, slide_path, file_type, lvl_x):
         super().__init__(slide_path, lvl_x)
         self.file_type = file_type
+        self._reader = None
 
     @property
     def reader(self):
-        return bioformats.ImageReader(self.slide_path)
+        if self._reader is None:
+            self._reader = bioformats.ImageReader(self.slide_path)
+        return self._reader
 
     @property
     def max_slide_width(self):
